@@ -16,8 +16,8 @@ A Python-based ticket management system designed to simulate customer support es
 - SQLite
 
 ## File Explanation
-- main.py is the main Python file where tickets are stored in a JSON file.
-- main1.py is the updated Python file where tickets are stored in a database that can be viewed in SQLite. 
+- main_json_version.py is the main Python file where tickets are stored in a JSON file.
+- main_sqlite_version.py is the updated Python file where tickets are stored in a database that can be viewed in SQLit
 
 ## Future Improvements
 - Dashboard analytics
