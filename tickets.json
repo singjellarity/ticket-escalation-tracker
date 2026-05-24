@@ -19,5 +19,33 @@
         "priority": "low",
         "status": "Open",
         "escalated": false
+    },
+    {
+        "customer": "jell",
+        "issue": "billing",
+        "priority": "medium",
+        "status": "Open",
+        "escalated": false
+    },
+    {
+        "customer": "mai",
+        "issue": "pc",
+        "priority": "high",
+        "status": "Open",
+        "escalated": true
+    },
+    {
+        "customer": "bastii",
+        "issue": "phone",
+        "priority": "low",
+        "status": "Open",
+        "escalated": false
+    },
+    {
+        "customer": "void",
+        "issue": "tv",
+        "priority": "low",
+        "status": "Open",
+        "escalated": false
     }
 ]
