@@ -1,0 +1,23 @@
+[
+    {
+        "customer": "jell",
+        "issue": "clearance",
+        "priority": "high",
+        "status": "Open",
+        "escalated": true
+    },
+    {
+        "customer": "mai",
+        "issue": "pc issue",
+        "priority": "medium",
+        "status": "Open",
+        "escalated": false
+    },
+    {
+        "customer": "void",
+        "issue": "mouse",
+        "priority": "low",
+        "status": "Open",
+        "escalated": false
+    }
+]
