@@ -28,13 +28,17 @@ except sqlite3.OperationalError:
     pass
 
 import matplotlib.pyplot as plt
-import numpy as np
+
 
 
 def create_ticket():
     customer = input("Customer Name: ")
     issue = input("Issue Type: ")
     priority = input("Priority (Low/Medium/High): ")
+        validate_priorities = ["Low", "Medium", "High"]
+    if priority.title() not in validate_priorities:
+        print("\nInvalid priority. Please enter Low, Medium, or High.\n")
+        return
 
     escalated = priority.lower() == "high"
 
@@ -59,7 +63,22 @@ def create_ticket():
 
     print("\nTicket created successfully!\n")
 
-
+def display_tickets(tickets):
+    if not tickets:
+        prrint("\nNo tickets found.\n")
+        returrn
+        
+    for ticket in tickets:
+        print(f"""
+Ticket ID: {ticket[0]}
+Customer: {ticket[1]}
+Issue: {ticket[2]}
+Priority: {ticket[3]}
+Status: {ticket[4]}
+Escalated: {"Yes" if ticket[5] else "No"}
+Assigned Agent: {ticket[6] if ticket[6] else "Unassigned"}
+""")
+        
 def view_tickets():
 
     cursor.execute("SELECT * FROM tickets")
@@ -73,15 +92,7 @@ def view_tickets():
     print("\n--- Ticket List ---")
 
     for ticket in tickets:
-        print(f"""
-Ticket ID: {ticket[0]}
-Customer: {ticket[1]}
-Issue: {ticket[2]}
-Priority: {ticket[3]}
-Status: {ticket[4]}
-Escalated: {"Yes" if ticket[5] else "No"}
-Assigned Agent: {ticket[6] if ticket[6] else "Unassigned"}
-""")
+        display_tickets([ticket])
 
 def update_ticket_status():
 
@@ -247,8 +258,7 @@ def analytics_dashboard():
     statuses = [row[0] for row in status_data]
     counts = [row[1] for row in status_data]
     
-    statuses = ["Open", "Closed"]
-    counts = [5, 3]
+
     
     plt.figure(figsize=(6,6))
 
@@ -314,7 +324,64 @@ def analytics_dashboard():
 
         plt.show() 
         
-    
+def search_tickets():
+
+    print("""
+Search By:
+1. Customer Name
+2. Issue Type
+3. Status
+4. Assigned Agent
+""")
+
+    choice = input("Select search option: ")
+
+    if choice == "1":
+        customer = input("Enter customer name: ")
+        cursor.execute("""
+            SELECT *
+            FROM tickets
+            WHERE customer LIKE ?
+        """, (f"%{customer}%",))
+
+    elif choice == "2":
+        issue = input("Enter issue type: ")
+        cursor.execute("""
+            SELECT *
+            FROM tickets
+            WHERE issue LIKE ?
+        """, (f"%{issue}%",))
+
+    elif choice == "3":
+        status = input("Enter status: ").title()
+        cursor.execute("""
+            SELECT *
+            FROM tickets
+            WHERE status = ?
+        """, (status,))
+
+    elif choice == "4":
+        agent = input("Enter assigned agent name: ")
+        cursor.execute("""
+            SELECT *
+            FROM tickets
+            WHERE assigned_agent LIKE ?
+        """, (f"%{agent}%",))
+
+    else:
+        print("\nInvalid option.\n")
+        return
+
+    results = cursor.fetchall()
+
+    if not results:
+        print("\nNo tickets found.\n")
+        return
+
+    for ticket in results:
+        display_tickets([ticket])
+   
+        
 while True:
 
     print("""
@@ -324,7 +391,8 @@ while True:
 4. Delete Ticket
 5. Assign Agent
 6. Analytics Dashboard
-7. Exit
+7. Search Tickets
+8. Exit
 """)
 
     choice = input("Select an option: ")
@@ -345,9 +413,13 @@ while True:
         assign_agent()
     
     elif choice == '6':
-        analytics_dashboard()       
+        analytics_dashboard()  
+             
 
     elif choice == '7':
+        search_tickets()
+
+    elif choice == '8':
         print("Goodbye!")
         connection.close()
         break
