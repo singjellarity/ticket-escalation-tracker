@@ -18,6 +18,16 @@ CREATE TABLE IF NOT EXISTS tickets (
 )
 """)
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS ticket_comments(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER,
+    comment TEXT,
+    created_at TEXT,
+    FOREIGN KEY(ticket_id) REFERENCES tickets(id)
+)
+""")
+
 connection.commit()
 
 
@@ -75,6 +85,12 @@ def create_ticket():
     ))
 
     connection.commit()
+    ticket_id = cursor.lastrowid
+    
+    log_activity(
+        ticket_id,
+        f"Ticket created" 
+    )
 
     print("\nTicket created successfully!\n")
 
@@ -122,6 +138,9 @@ def update_ticket_status():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     ticket = cursor.fetchone()
+    ticket[4]
+    old_status = ticket[4]
+    
 
     if not ticket:
         print("\nTicket not found.\n")
@@ -154,6 +173,11 @@ def update_ticket_status():
     ))
 
     connection.commit()
+    
+    log_activity(
+        ticket_id,
+        f"Status changed from {old_status} to {new_status}"
+    )
 
     print("\nTicket status updated successfully!\n")
     
@@ -233,6 +257,11 @@ def assign_agent():
     ))
 
     connection.commit()
+    
+    log_activity(
+        ticket_id,
+        f"Assigned to agent: {agent_name}"
+    )
 
     print("\nAgent assigned successfully!\n")
    
@@ -427,7 +456,86 @@ Search By:
     for ticket in results:
         display_tickets([ticket])
    
-        
+def add_comment():
+    
+    ticket_id = input("Enter Ticket ID: ")
+    
+    cursor.execute("""
+    SELECT *
+    FROM tickets
+    WHERE id = ?
+    """, (ticket_id,))
+    
+    ticket = cursor.fetchone()
+    
+    if not ticket:
+        print("\nTicket not found.\n")
+        return  
+    
+    comment = input("Enter your comment: ")
+    
+    if not comment.strip():
+        print("\nComment cannot be empty.\n")
+        return  
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    cursor.execute("""
+    INSERT INTO ticket_comments (
+        ticket_id,
+        comment,
+        created_at
+    )
+    VALUES (?, ?, ?)
+    """, (
+        ticket_id,
+        comment,
+        current_time
+    ))
+    
+    connection.commit()
+    
+    print("\nComment added successfully!\n")
+    
+def view_comments():
+    
+    ticket_id = input (
+        "Enter ticket ID to view comments: "
+    )
+    cursor.execute("""
+    SELECT *
+    FROM ticket_comments
+    WHERE ticket_id = ?
+    """, (ticket_id,))
+    
+    comments = cursor.fetchall()
+    
+    if not comments:
+        print("\nNo comments found for this ticket.\n")
+        return
+
+    print(f"\n--- Comments --- ")
+    
+    for comment in comments:
+        print(f"[{comment[3]}] {comment[2]}")
+
+def log_activity(ticket_id, action):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    cursor.execute("""
+    INSERT INTO ticket_comments (
+        ticket_id,
+        comment,
+        created_at
+    )
+    VALUES (?, ?, ?)
+    """, (
+        ticket_id,
+        activity,
+        current_time
+    ))
+    connection.commit()
+
 while True:
 
     print("""
@@ -438,7 +546,9 @@ while True:
 5. Assign Agent
 6. Analytics Dashboard
 7. Search Tickets
-8. Exit
+8. Add comment
+9. View comments
+10. Exit
 """)
 
     choice = input("Select an option: ")
@@ -466,6 +576,12 @@ while True:
         search_tickets()
 
     elif choice == '8':
+        add_comment()
+        
+    elif choice == '9':
+        view_comments()
+        
+    elif choice == '10':
         print("Goodbye!")
         connection.close()
         break
