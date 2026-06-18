@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 connection = sqlite3.connect("tickets.db")
 cursor = connection.cursor()
@@ -10,11 +11,15 @@ CREATE TABLE IF NOT EXISTS tickets (
     issue TEXT,
     priority TEXT,
     status TEXT,
-    escalated BOOLEAN
+    escalated BOOLEAN,
+    assigned_agent TEXT,
+    created_at TEXT,
+    updated_at TEXT
 )
 """)
 
 connection.commit()
+
 
 try:
     cursor.execute("""
@@ -29,34 +34,44 @@ except sqlite3.OperationalError:
 
 import matplotlib.pyplot as plt
 
+import sqlite3
+import matplotlib.pyplot as plt
+from datetime import datetime
+
 
 
 def create_ticket():
     customer = input("Customer Name: ")
     issue = input("Issue Type: ")
     priority = input("Priority (Low/Medium/High): ")
-        validate_priorities = ["Low", "Medium", "High"]
+    validate_priorities = ["Low", "Medium", "High"]
+    
     if priority.title() not in validate_priorities:
         print("\nInvalid priority. Please enter Low, Medium, or High.\n")
         return
 
     escalated = priority.lower() == "high"
-
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     cursor.execute("""
     INSERT INTO tickets (
         customer,
         issue,
         priority,
         status,
-        escalated
+        escalated,
+        created_at,
+        updated_at
     )
-    VALUES (?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         customer,
         issue,
         priority,
         "Open",
-        escalated
+        escalated,
+        current_time,
+        current_time
     ))
 
     connection.commit()
@@ -102,7 +117,8 @@ def update_ticket_status():
     SELECT * FROM tickets
     WHERE id = ?
     """, (ticket_id,))
-
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     ticket = cursor.fetchone()
 
     if not ticket:
@@ -125,10 +141,11 @@ def update_ticket_status():
 
     cursor.execute("""
     UPDATE tickets
-    SET status = ?
+    SET status = ?, updated_at = ?
     WHERE id = ?
     """, (
         new_status,
+        current_time,
         ticket_id
     ))
 
@@ -180,7 +197,8 @@ def delete_ticket():
 def assign_agent():
 
     ticket_id = input("Enter Ticket ID: ")
-
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     cursor.execute("""
     SELECT * FROM tickets
     WHERE id = ?
@@ -200,10 +218,11 @@ def assign_agent():
 
     cursor.execute("""
     UPDATE tickets
-    SET assigned_agent = ?
+    SET assigned_agent = ?, updated_at = ?
     WHERE id = ?
     """, (
         agent_name,
+        current_time,
         ticket_id
     ))
 
@@ -323,6 +342,27 @@ def analytics_dashboard():
         plt.ylabel("Assigned Tickets")
 
         plt.show() 
+        
+        try:
+            cursor.execute("""
+            ALTER TABLE tickets
+            ADD COLUMN created_at TEXT
+            """)
+            
+            connection.commit()
+            
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute("""
+            ALTER TABLE tickets
+            ADD COLUMN updated_at TEXT
+            """)
+            
+            connection.commit()
+        except sqlite3.OperationalError:
+            pass
         
 def search_tickets():
 
