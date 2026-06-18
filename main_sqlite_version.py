@@ -92,6 +92,8 @@ Priority: {ticket[3]}
 Status: {ticket[4]}
 Escalated: {"Yes" if ticket[5] else "No"}
 Assigned Agent: {ticket[6] if ticket[6] else "Unassigned"}
+Created At: {ticket[7]}
+Updated At: {ticket[8]}
 """)
         
 def view_tickets():
@@ -138,6 +140,8 @@ def update_ticket_status():
     if new_status not in valid_statuses:
         print("\nInvalid status.\n")
         return
+
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     cursor.execute("""
     UPDATE tickets
@@ -216,6 +220,8 @@ def assign_agent():
         print("\nAgent name cannot be empty.\n")
         return
 
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     cursor.execute("""
     UPDATE tickets
     SET assigned_agent = ?, updated_at = ?
