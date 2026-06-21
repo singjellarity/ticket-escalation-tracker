@@ -1,5 +1,6 @@
 from database import connection
 from database import cursor
+from exports import export_tickets_to_csv
 
 from ticket_service import (
     create_ticket,
@@ -29,7 +30,8 @@ while True:
 7. Search Tickets
 8. Add comment
 9. View comments
-10. Exit
+10. Export Tickets to CSV
+11. Exit
 """)
 
     choice = input("Select an option: ")
@@ -63,6 +65,9 @@ while True:
         view_comments()
         
     elif choice == '10':
+        export_tickets_to_csv()
+        
+    elif choice == '11':
         print("Goodbye!")
         connection.close()
         break
